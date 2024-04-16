@@ -1,5 +1,6 @@
 package MichelaVivacqua.gestionedispositiviwithloginauthorization.payloads;
 
+import MichelaVivacqua.gestionedispositiviwithloginauthorization.entities.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -22,6 +23,7 @@ public record NewDipendenteDTO(
         @URL(message="L'URL inserito non è valido")
         String propic,
         @NotEmpty(message = "La password è obbligatoria")
-        String password
+        String password,
+        Role role
 ) {
 }

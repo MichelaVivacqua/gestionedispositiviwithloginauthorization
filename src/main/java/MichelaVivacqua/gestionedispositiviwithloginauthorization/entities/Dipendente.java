@@ -33,14 +33,14 @@ public class Dipendente implements UserDetails {
     @OneToMany(mappedBy = "dipendente")
     private List<Dispositivo> dispositivi;
 
-    public Dipendente(String username, String name, String surname, String email, String propic, String password) {
+    public Dipendente(String username, String name, String surname, String email, String propic, String password, Role role) {
         this.username = username;
         this.name = name;
         this.surname = surname;
         this.email = email;
         this.propic = propic;
         this.password=password;
-        this.role = Role.USER;
+        this.role = role;
     }
 
     @Override

@@ -40,22 +40,22 @@ public class DipendentiController {
 
 
     @GetMapping("/me")
-    public User getProfile(@AuthenticationPrincipal User currentAuthenticatedUser){
+    public Dipendente getProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente){
         // @AuthenticationPrincipal mi consente di accedere all'utente attualmente autenticato
         // Questa cosa è resa possibile dal fatto che precedentemente a questo endpoint (ovvero nel JWTFilter)
         // ho estratto l'id dal token e sono andato nel db per cercare l'utente ed "associarlo" a questa richiesta
-        return currentAuthenticatedUser;
+        return currentAuthenticatedDipendente;
     }
 
     @PutMapping("/me")
-    public User updateProfile(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody User updatedUser){
-        return this.dipendentiService.findByIdAndUpdate(currentAuthenticatedUser.getId(), updatedUser);
+    public Dipendente updateProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente, @RequestBody Dipendente updatedDipendente){
+        return this.dipendentiService.findByIdAndUpdate(currentAuthenticatedDipendente.getId(), updatedDipendente);
     }
 
     @DeleteMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProfile(@AuthenticationPrincipal User currentAuthenticatedUser){
-        this.usersService.findByIdAndDelete(currentAuthenticatedUser.getId());
+    public void deleteProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente){
+        this.dipendentiService.findByIdAndDelete(currentAuthenticatedDipendente.getId());
     }
 
 
@@ -69,7 +69,7 @@ public class DipendentiController {
         @GetMapping
         @PreAuthorize("hasAuthority('ADMIN')") // PreAuthorize serve per poter dichiarare delle regole di accesso
         // all'endpoint basandoci sul ruolo dell'utente. In questo caso solo gli ADMIN possono accedere
-        private List<Dipendente> getAllDipendenti(){
+        public List<Dipendente> getAllDipendenti(){
             return this.dipendentiService.getDipendentiList();
         }
 

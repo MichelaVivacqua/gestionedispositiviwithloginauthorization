@@ -42,7 +42,7 @@ public class DipendentiService {
             throw new BadRequestException("L'email " + newDipendenteDTO.email() + " è già in uso, quindi il dipendente risulta già registrato!");
         }
 
-        Dipendente dipendente = new Dipendente(newDipendenteDTO.username(),newDipendenteDTO.name(), newDipendenteDTO.surname(), newDipendenteDTO.email(), newDipendenteDTO.propic(), newDipendenteDTO.password());
+        Dipendente dipendente = new Dipendente(newDipendenteDTO.username(),newDipendenteDTO.name(), newDipendenteDTO.surname(), newDipendenteDTO.email(), newDipendenteDTO.propic(), newDipendenteDTO.password(),newDipendenteDTO.role());
         System.out.println(dipendente);
         return dipendentiDAO.save(dipendente);
     }
