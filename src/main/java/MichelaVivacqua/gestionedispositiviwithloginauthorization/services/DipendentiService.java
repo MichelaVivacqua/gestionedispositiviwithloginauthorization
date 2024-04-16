@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +26,9 @@ public class DipendentiService {
 
     @Autowired
     private Cloudinary cloudinaryUploader;
+
+    @Autowired
+    private PasswordEncoder bcrypt;
 
     public DipendentiService(DipendentiDAO dipendentiDAO) {
         this.dipendentiDAO = dipendentiDAO;
@@ -42,7 +46,7 @@ public class DipendentiService {
             throw new BadRequestException("L'email " + newDipendenteDTO.email() + " è già in uso, quindi il dipendente risulta già registrato!");
         }
 
-        Dipendente dipendente = new Dipendente(newDipendenteDTO.username(),newDipendenteDTO.name(), newDipendenteDTO.surname(), newDipendenteDTO.email(), newDipendenteDTO.propic(), newDipendenteDTO.password(),newDipendenteDTO.role());
+        Dipendente dipendente = new Dipendente(newDipendenteDTO.username(),newDipendenteDTO.name(), newDipendenteDTO.surname(), newDipendenteDTO.email(), newDipendenteDTO.propic(), bcrypt.encode(newDipendenteDTO.password()),newDipendenteDTO.role());
         System.out.println(dipendente);
         return dipendentiDAO.save(dipendente);
     }
