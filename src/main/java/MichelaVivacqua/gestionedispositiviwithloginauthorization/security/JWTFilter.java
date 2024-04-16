@@ -1,14 +1,19 @@
 package MichelaVivacqua.gestionedispositiviwithloginauthorization.security;
 
+import MichelaVivacqua.gestionedispositiviwithloginauthorization.entities.Dipendente;
+import MichelaVivacqua.gestionedispositiviwithloginauthorization.services.DipendentiService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import MichelaVivacqua.gestionedispositiviwithloginauthorization.exceptions.UnauthorizedException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.io.IOException;
 
@@ -18,6 +23,9 @@ public class JWTFilter extends OncePerRequestFilter {
     @Autowired
     private JWTTools jwtTools;
 
+    @Autowired
+    private DipendentiService dipendentiService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -26,7 +34,7 @@ public class JWTFilter extends OncePerRequestFilter {
         // Cose da fare:
 
         // 1. Controlliamo se nella richiesta corrente ci sia un Authorization Header, se non c'è --> 401
-        String authHeader = request.getHeader("Authorization"); // Authorization Header --> Bearer eyJhbGciOiJIUzM4NCJ9.eyJpYXQiOjE3MTMxNzY3NDUsImV4cCI6MTcxMzc4MTU0NSwic3ViIjoiZDFlZTlmN2MtZWQwZS00ZTQ3LThmN2EtYTQ0Yzk5MTNkMzE0In0.HFk14O-60faQY4TEnvsNgqjQdOVy7aD-1L-jCvayGz2VTRIQQqGDRzx1qSx5WWxy
+        String authHeader = request.getHeader("Authorization"); // Authorization Header --> Bearer ...
 
         if(authHeader == null || !authHeader.startsWith("Bearer ")) throw new UnauthorizedException("Per favore inserisci il token nell'Authorization Header");
 
@@ -37,6 +45,20 @@ public class JWTFilter extends OncePerRequestFilter {
         jwtTools.verifyToken(accessToken);
 
         // 4. Se tutto è OK andiamo al prossimo elemento della Filter Chain, per prima o poi arrivare all'endpoint
+
+        // 4.1 Cerco l'utente nel DB tramite id (l'id sta nel token..)
+        String id = jwtTools.extractIdFromToken(accessToken);
+        int dipendenteId = Integer.parseInt(id);
+        Dipendente currentDipendente = this.dipendentiService.findById(dipendenteId);
+
+        // 4.2 Devo informare Spring Security su chi sia l'utente corrente che sta effettuando la richiesta. In qualche maniera
+        // equivale ad "associare" l'utente alla richiesta corrente
+        Authentication authentication = new UsernamePasswordAuthenticationToken(currentDipendente, null, currentDipendente.getAuthorities());
+        // OBBLIGATORIO il terzo parametro con la lista ruoli dell'utente se si vuol poter usare i vari @PreAuthorize
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 4.3 Vado al prossimo elemento della catena, passandogli gli oggetti request e response
+
         filterChain.doFilter(request, response); // Vado al prossimo elemento della catena, passandogli gli oggetti request e response
         // 5. Se il token non fosse OK --> 401
     }

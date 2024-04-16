@@ -8,6 +8,9 @@ import MichelaVivacqua.gestionedispositiviwithloginauthorization.services.Dipend
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +39,25 @@ public class DipendentiController {
        return new NewDipendenteRespDTO(this.dipendentiService.saveDipendente(body).getId());}
 
 
+    @GetMapping("/me")
+    public User getProfile(@AuthenticationPrincipal User currentAuthenticatedUser){
+        // @AuthenticationPrincipal mi consente di accedere all'utente attualmente autenticato
+        // Questa cosa è resa possibile dal fatto che precedentemente a questo endpoint (ovvero nel JWTFilter)
+        // ho estratto l'id dal token e sono andato nel db per cercare l'utente ed "associarlo" a questa richiesta
+        return currentAuthenticatedUser;
+    }
+
+    @PutMapping("/me")
+    public User updateProfile(@AuthenticationPrincipal User currentAuthenticatedUser, @RequestBody User updatedUser){
+        return this.dipendentiService.findByIdAndUpdate(currentAuthenticatedUser.getId(), updatedUser);
+    }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteProfile(@AuthenticationPrincipal User currentAuthenticatedUser){
+        this.usersService.findByIdAndDelete(currentAuthenticatedUser.getId());
+    }
+
 
     // 2. GET http://localhost:3001/dipendenti/{{dipendenteId}}
     @GetMapping("/{dipendenteId}")
@@ -45,6 +67,8 @@ public class DipendentiController {
 
 //    3. GET http://localhost:3001/dipendenti
         @GetMapping
+        @PreAuthorize("hasAuthority('ADMIN')") // PreAuthorize serve per poter dichiarare delle regole di accesso
+        // all'endpoint basandoci sul ruolo dell'utente. In questo caso solo gli ADMIN possono accedere
         private List<Dipendente> getAllDipendenti(){
             return this.dipendentiService.getDipendentiList();
         }
